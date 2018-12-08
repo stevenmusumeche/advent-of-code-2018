@@ -4,13 +4,8 @@ const coords = getCoords();
 const limits = getLimits(coords);
 const grid = makeGrid(limits);
 
-addCoords(coords);
-
 for (let row = 0; row < grid.length; row++) {
   for (let col = 0; col < grid[row].length; col++) {
-    if (grid[row][col] !== undefined) continue;
-
-    // this is an empty node, so calculate the manhattan distance between it and each coordinate
     let distances = coords
       .map((coord, coordId) => ({
         coordId,
@@ -20,9 +15,7 @@ for (let row = 0; row < grid.length; row++) {
       .sort((a, b) => a.md - b.md);
 
     // check for multiple instances of the same distance
-    if (distances[0].md === distances[1].md) {
-      grid[row][col] = ".";
-    } else {
+    if (distances[0].md !== distances[1].md) {
       grid[row][col] = distances[0].coordId;
     }
   }
@@ -68,15 +61,6 @@ function isEdge(id) {
   }
 
   return false;
-}
-
-function addCoords(coords) {
-  let i = 0;
-  for (coord of coords) {
-    const [row, col] = coord;
-    grid[col][row] = i;
-    i++;
-  }
 }
 
 function makeGrid(limits) {
