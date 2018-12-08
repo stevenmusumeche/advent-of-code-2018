@@ -8,7 +8,7 @@ addCoords(coords);
 
 for (let row = 0; row < grid.length; row++) {
   for (let col = 0; col < grid[row].length; col++) {
-    //if (grid[row][col] !== undefined) continue;
+    if (grid[row][col] !== undefined) continue;
 
     // this is an empty node, so calculate the manhattan distance between it and each coordinate
     let distances = coords
@@ -53,19 +53,21 @@ console.log(
 function shouldCount(id) {
   const matchingCoords = coords[id];
   if (!matchingCoords) return false;
-  if (isEdge(matchingCoords)) return false;
+  if (isEdge(id)) return false;
 
-  if (id === ".") return false;
   return true;
 }
 
-function isEdge(coords) {
-  return (
-    coords[0] <= limits.minCol ||
-    coords[1] <= limits.minRow ||
-    coords[0] >= limits.maxCol ||
-    coords[1] >= limits.maxRow
-  );
+function isEdge(id) {
+  // check top and bottom row
+  if (grid[0].includes(id) || grid[grid.length - 1].includes(id)) return true;
+
+  // check first and last column
+  for (let row = 0; row < grid.length; row++) {
+    if (grid[row][0] === id || grid[row][grid[row].length] === id) return true;
+  }
+
+  return false;
 }
 
 function addCoords(coords) {
@@ -86,7 +88,7 @@ function makeGrid(limits) {
 }
 
 function getCoords() {
-  const input = getInput();
+  const input = getInput("input.txt");
   return input.map(x => x.split(", ").map(Number));
 }
 
