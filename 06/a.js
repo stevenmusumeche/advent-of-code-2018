@@ -8,12 +8,12 @@ addCoords(coords);
 
 for (let row = 0; row < grid.length; row++) {
   for (let col = 0; col < grid[row].length; col++) {
-    if (grid[row][col]) continue;
+    //if (grid[row][col] !== undefined) continue;
 
     // this is an empty node, so calculate the manhattan distance between it and each coordinate
     let distances = coords
       .map((coord, coordId) => ({
-        coordId: String.fromCharCode(97 + coordId),
+        coordId,
         coord,
         md: calcManhattanDistance([col, row], coord)
       }))
@@ -28,40 +28,65 @@ for (let row = 0; row < grid.length; row++) {
   }
 }
 
-console.log(grid);
-
 const vals = {};
 for (let row = 0; row < grid.length; row++) {
   for (let col = 0; col < grid[row].length; col++) {
-    if (vals[grid[row][col]]) {
-      vals[grid[row][col]] += 1;
-    } else {
-      vals[grid[row][col]] = 1;
+    const key = grid[row][col];
+    if (shouldCount(key)) {
+      if (vals[key]) {
+        vals[key] += 1;
+      } else {
+        vals[key] = 1;
+      }
     }
   }
 }
 
-//console.log(vals);
+console.log(
+  "The answer is",
+  Object.keys(vals).reduce((acc, cur) => {
+    if (vals[cur] > acc) return vals[cur];
+    return acc;
+  }, 0)
+);
+
+function shouldCount(id) {
+  const matchingCoords = coords[id];
+  if (!matchingCoords) return false;
+  if (isEdge(matchingCoords)) return false;
+
+  if (id === ".") return false;
+  return true;
+}
+
+function isEdge(coords) {
+  return (
+    coords[0] <= limits.minCol ||
+    coords[1] <= limits.minRow ||
+    coords[0] >= limits.maxCol ||
+    coords[1] >= limits.maxRow
+  );
+}
 
 function addCoords(coords) {
   let i = 0;
   for (coord of coords) {
     const [row, col] = coord;
-    grid[col][row] = String.fromCharCode(65 + i);
+    grid[col][row] = i;
     i++;
   }
 }
 
 function makeGrid(limits) {
-  const grid = Array.from({ length: limits.row + 1 }, () =>
-    Array.from({ length: limits.col + 2 })
+  const grid = Array.from({ length: limits.maxRow + 1 }, () =>
+    Array.from({ length: limits.maxCol + 2 })
   );
 
   return grid;
 }
 
 function getCoords() {
-  const input = getInput("input-small.txt");
+  const input = getInput();
   return input.map(x => x.split(", ").map(Number));
 }
 
@@ -69,19 +94,20 @@ function getLimits(coords) {
   return coords.reduce(
     (acc, cur) => {
       const [col, row] = cur;
-      if (row > acc.row) acc.row = row;
-      if (col > acc.col) acc.col = col;
+      if (row > acc.maxRow) acc.maxRow = row;
+      if (row < acc.minRow) acc.minRow = row;
+      if (col > acc.maxCol) acc.maxCol = col;
+      if (col < acc.minCol) acc.minCol = col;
 
       return acc;
     },
-    { row: 0, col: 0 }
+    { maxRow: 0, maxCol: 0, minRow: Infinity, minCol: Infinity }
   );
 }
 
 function calcManhattanDistance(a, b) {
   const [x1, y1] = a;
   const [x2, y2] = b;
-  // console.log(a, b, Math.abs(x2 - x1) + Math.abs(y2 - y1));
 
   return Math.abs(x2 - x1) + Math.abs(y2 - y1);
 }
