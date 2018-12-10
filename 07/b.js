@@ -7,75 +7,60 @@ const path = [];
 const numWorkers = 5;
 const workers = Array.from({ length: numWorkers }, () => ({
   step: null,
-  timeLeft: 0
+  timeLeft: null
 }));
 
+let candidates;
 let second = 0;
-while (Object.keys(requirements).length > 0 && second < 75) {
-  console.log("-----------------");
-
-  console.log("path", path);
-
-  // a step is a candidate if all of its requirements are complete
-  let candidates = Object.keys(requirements)
+while (Object.keys(requirements).length > 0) {
+  candidates = Object.keys(requirements)
     .filter(key => requirements[key].every(entry => path.includes(entry)))
+    .filter(key => !isInProgress(key))
     .sort();
 
-  console.log("candidates", candidates);
-
-  console.log("Second", second);
-  console.log("Before 1", workers[0]);
-  console.log("Before 2", workers[1]);
-  console.log("Before 3", workers[2]);
-  console.log("Before 4", workers[3]);
-  console.log("Before 5", workers[4]);
-  console.log("--");
-
-  // loop over each worker
-  for (let curWorker = 0; curWorker < numWorkers; curWorker++) {
-    // get the first candidate
-    const candidate = candidates.shift();
-    //console.log("candidate", candidate, isInProgress(candidate));
-
-    // if this candidate is currently in progress, then skip this step and put it back into the candidates list
-    if (!isInProgress(candidate)) {
-      console.log(curWorker, "trying", candidate, workers[curWorker]);
-
-      if (candidate && workers[curWorker].timeLeft === 0) {
+  // assign any available candidates to available workers
+  for (let candidate of candidates) {
+    for (let curWorker = 0; curWorker < numWorkers; curWorker++) {
+      if (workerAvailable(workers[curWorker])) {
         workers[curWorker] = {
           step: candidate,
           timeLeft: durations[candidate]
         };
-      } else {
-        candidates.unshift(candidate);
-      }
-    }
-
-    // for any in-progress steps, decrement the time left by 1 second
-    // if the task is completed, then push the task onto the completed path list and delete it from requirements
-    if (workers[curWorker].timeLeft > 0) {
-      workers[curWorker].timeLeft -= 1;
-      if (workers[curWorker].timeLeft === 0) {
-        path.push(candidate);
-        delete requirements[candidate];
+        // since we found a worker for this candidate, break out of the worker loop
+        // and start over with the next candidate
+        break;
       }
     }
   }
 
-  console.log("After 1", workers[0]);
-  console.log("After 2", workers[1]);
-  console.log("After 3", workers[2]);
-  console.log("After 4", workers[3]);
-  console.log("After 5", workers[4]);
+  // decrement time and check for completeness
+  for (let curWorker = 0; curWorker < numWorkers; curWorker++) {
+    if (!workerAvailable(workers[curWorker])) {
+      workers[curWorker].timeLeft--;
+    }
+
+    //see if we're done
+    if (workers[curWorker].timeLeft === 0) {
+      path.push(workers[curWorker].step);
+      workers[curWorker].timeLeft = null;
+      delete requirements[workers[curWorker].step];
+    }
+  }
 
   second++;
 }
 
-console.log(path.join(""));
+console.log(path.join(""), "in", second, "seconds");
+
+process.exit(0);
+
+function workerAvailable(worker) {
+  return worker.timeLeft === null;
+}
 
 function isInProgress(step) {
   for (let worker of workers) {
-    if (worker.step === step && worker.timeLeft > 0) return true;
+    if (worker.step === step) return true;
   }
   return false;
 }
