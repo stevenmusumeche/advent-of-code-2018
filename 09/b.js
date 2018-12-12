@@ -1,6 +1,7 @@
 const { getInput } = require("../input");
 
 let { numPlayers, lastMarble } = load("input.txt");
+lastMarble = lastMarble * 100;
 
 let scores = Array.from({ length: numPlayers + 1 }, () => 0);
 
