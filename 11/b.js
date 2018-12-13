@@ -1,19 +1,16 @@
 const max = 300;
-let results = buildCoordinateScores(18);
+let results = buildCoordinateScores(5153);
+let integrals = buildIntegrals(results);
 
-winner = { key: null, score: 0 };
+//const size = 3;
+winner = { key: null, score: -Infinity };
 for (let x = 1; x <= max; x++) {
-  console.log(x);
-
   for (let y = 1; y <= max; y++) {
-    const maxSize = x > y ? max - x + 1 : max - y + 1;
-    // console.log("----");
-    // console.log(x, y, maxSize);
+    //console.log(key, 1, Math.min(max - y + 1, max - x + 1));
 
-    for (let size = x; size < maxSize; size++) {
+    for (let size = 1; size <= Math.min(max - y + 1, max - x + 1); size++) {
       const key = `${x},${y},${size}`;
       const score = calcGridScore(x, y, size);
-      //console.log("try", key, score);
       if (score > winner.score) {
         winner.score = score;
         winner.key = key;
@@ -21,7 +18,24 @@ for (let x = 1; x <= max; x++) {
     }
   }
 }
-console.log(winner);
+
+console.log("b", winner);
+
+function buildIntegrals(results) {
+  let integrals = new Map();
+  for (let x = 1; x <= max; x++) {
+    for (let y = 1; y <= max; y++) {
+      const key = `${x},${y}`;
+      let integral = results.get(key);
+      integral += integrals.get(`${x},${y - 1}`) || 0;
+      integral += integrals.get(`${x - 1},${y}`) || 0;
+      integral -= integrals.get(`${x - 1},${y - 1}`) || 0;
+
+      integrals.set(key, integral);
+    }
+  }
+  return integrals;
+}
 
 function buildCoordinateScores(serial) {
   let results = new Map();
@@ -35,14 +49,12 @@ function buildCoordinateScores(serial) {
 }
 
 function calcGridScore(x, y, size) {
-  let score = 0;
-  for (let i = x; i < x + size; i++) {
-    for (let j = y; j < y + size; j++) {
-      const key = `${i},${j}`;
-      score += results.get(key);
-    }
-  }
-  return score;
+  const a = integrals.get(`${x - 1},${y - 1}`) || 0;
+  const b = integrals.get(`${x - 1},${y + size - 1}`) || 0;
+  const c = integrals.get(`${x + size - 1},${y - 1}`) || 0;
+  const d = integrals.get(`${x + size - 1},${y + size - 1}`) || 0;
+
+  return d + a - b - c;
 }
 
 function calcCoordinateScore(x, y, serial) {
@@ -56,5 +68,3 @@ function calcCoordinateScore(x, y, serial) {
   const stringified = String(power);
   return Number(stringified[stringified.length - 3]) - 5;
 }
-
-//console.log(results);
