@@ -8,7 +8,7 @@ interface Cart {
   turn: number;
 }
 
-let grid = parseInput("input-small.txt");
+let grid = parseInput("input.txt");
 let carts = extractCarts(grid);
 
 console.log(`\n------ ORIGINAL ------\n`);
@@ -121,13 +121,13 @@ while (hasCrash === false) {
     }
   });
 
-  console.log("CRASH AT ", crashes);
-
-  printGridWithCarts(grid, carts);
+  //printGridWithCarts(grid, carts);
 
   carts = currentCarts;
   tick++;
 }
+
+console.log("CRASH AT ", crashes);
 
 function findCrashes(carts: Cart[]): Cart | void {
   for (let i = 0; i < carts.length; i++) {
