@@ -4,28 +4,35 @@ const NUM_GENERATIONS = 20;
 const SPAN_LEN = 5;
 const PADDING = 10;
 const PAD = ".".repeat(PADDING);
-let { initialState, remaining } = parseInput();
+
+let { initialState, remaining } = parseInput("input.txt");
 
 let cur = initialState;
 let generation = 1;
-const centerIndex = 0;
+let centerIndex = 0;
 while (generation <= NUM_GENERATIONS) {
   cur = trim(cur);
-  //console.log(centerIndex, cur);
-
   cur = addPadding(cur);
 
-  let next = "";
+  let next = ".".repeat(SPAN_LEN + 1);
   for (let i = SPAN_LEN + 1; i < cur.length - SPAN_LEN - 1; i++) {
     const span = cur.substr(i - SPAN_LEN + 3, 5);
     next += predict(span) ? "#" : ".";
   }
-  console.log("--------");
-  console.log(generation, trim(next));
+  // console.log("--------");
+  // console.log(generation, centerIndex, next[centerIndex], next);
 
   cur = next;
   generation++;
 }
+
+let numSum = 0;
+for (let i = 0; i < cur.length; i++) {
+  if (cur[i] === "#") {
+    numSum += i - centerIndex;
+  }
+}
+console.log("Sum of numbers", numSum);
 
 function predict(span: string) {
   const match = remaining.find(r => r.around === span);
@@ -37,6 +44,7 @@ function trim(pots: string) {
   const firstTrue = pots.indexOf("#");
   if (firstTrue !== -1) {
     pots = pots.substr(firstTrue, pots.length - firstTrue);
+    centerIndex -= firstTrue;
   }
   const lastTrue = pots.lastIndexOf("#");
   if (lastTrue !== -1) {
@@ -47,11 +55,12 @@ function trim(pots: string) {
 }
 
 function addPadding(pots: string) {
+  centerIndex += PADDING;
   return PAD + pots + PAD;
 }
 
-function parseInput() {
-  const raw: string[] = getInput("input-small.txt");
+function parseInput(file: string) {
+  const raw: string[] = getInput(file);
   let [initialState, _, ...rest] = raw;
   initialState = initialState.substr(15, initialState.length);
   const keys = rest.map(x => {
