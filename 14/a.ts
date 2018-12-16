@@ -1,5 +1,3 @@
-import { LinkedList } from "linked-list-typescript";
-
 interface Node {
   value: number;
 }
@@ -7,12 +5,9 @@ interface Node {
 const AFTER = 209231;
 const NUM_RECIPES = 10;
 
-// let list: LinkedList = { add };
-
 let firstElfIndex = 0;
 let secondElfIndex = 1;
 
-//let list = new LinkedList<Node>(firstElf, secondElf);
 let list: Node[] = [];
 list.push(createNode(3));
 list.push(createNode(7));
@@ -32,35 +27,18 @@ while (AFTER + NUM_RECIPES >= list.length) {
   nextIndex = (secondElfIndex + dist) % list.length;
   secondElfIndex = nextIndex;
 
-  //console.log(firstElfIndex, list.length, (firstElfIndex + dist) % list.length);
-
   //printList(list);
 
   foo++;
 }
 
 console.log("FINAL");
-//printList(list);
 console.log(
   list
     .map(x => x.value)
     .join("")
     .substr(AFTER, NUM_RECIPES)
 );
-
-// first.prev = second;
-// first.next = second;
-// second.prev = first;
-// second.next = first;
-// list.head = first;
-// list.tail = second;
-
-// let cur = list.head;
-// while (cur !== list.head) {
-//   console.log(cur);
-
-//   cur = cur.next!;
-// }
 
 function createNode(value: number): Node {
   return { value };
