@@ -20,13 +20,52 @@ interface Player {
 
 type Board = Array<Array<string>>;
 
+class Node {
+  constructor(public data: any, public next: any) {}
+}
+
+class Queue {
+  public front: any = null;
+  public back: any = null;
+
+  enqueue(element: any) {
+    var node = new Node(element, null);
+    if (this.back === null) {
+      this.front = node;
+      this.back = node;
+    } else {
+      this.back.next = node;
+      this.back = node;
+    }
+  }
+
+  dequeue() {
+    if (this.front === null) {
+      throw Error("Cannot dequeue because queue is empty");
+    }
+
+    let first = this.front;
+    this.front = this.front.next;
+
+    if (this.front === null) {
+      this.back = null;
+    }
+    return first.data;
+  }
+}
+
 let raw = getInput("input.txt");
 let board: Board = raw.map((x: string) => x.split(""));
-
 let players = getInitialPlayers(board);
 
 let round = 1;
 let finished = false;
+
+/**
+  real    0m5.853s
+  user    0m5.801s
+  sys     0m0.092s
+ */
 
 while (finished === false) {
   // sort players
@@ -191,9 +230,11 @@ function getShortestPath(a: Coord, b: Coord) {
 
   let aa = { ...a, path: [] };
 
-  let q: CoordPath[] = [aa];
-  while (q.length > 0) {
-    let cur = q.shift();
+  let queue = new Queue();
+  queue.enqueue(aa);
+
+  while (queue.front !== null) {
+    let cur = queue.dequeue();
 
     if (!cur) throw Error("invariant");
 
@@ -202,7 +243,7 @@ function getShortestPath(a: Coord, b: Coord) {
       if (newLocation.x === b.x && newLocation.y === b.y) {
         return newLocation.path;
       } else if (newLocation.isValid) {
-        q.push(newLocation);
+        queue.enqueue(newLocation);
       }
     }
   }
